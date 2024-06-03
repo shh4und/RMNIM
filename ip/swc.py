@@ -10,6 +10,7 @@ class SWCFile:
         self.data.append((identity, structure_type, x, y, z, radius, parent_identity))
     
     def write_file(self):
+        self.data.sort()
         with open(self.filename, 'w') as file:
             file.write("# SWC test pilot\n")
             for point in self.data:

@@ -79,6 +79,8 @@ class Graph:
 
     def create_graph(self):
         for z in range(self.shape[0]):
+            if self.image[z,:,:].sum() == 0:
+                continue
             for y in range(self.shape[1]):
                 for x in range(self.shape[2]):
                     if self.image[z, y, x] == 0:

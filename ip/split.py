@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 import os
 import re
-from enhancement import median_blur, gaussian_blur
-from binary import mean_threshold, simple_binary, segment, thinned
+from ip.enhancement import *
+from ip.binary import *
 
 
 

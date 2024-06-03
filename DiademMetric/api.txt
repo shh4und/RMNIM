@@ -1,0 +1,137 @@
+This API is very primitive and currently only for DiademMetric.java. If you would like more details on how these settings or the algorithm work, contact Todd Gillette at tgillett@gmu.edu. I will be working on a more extensive API that includes object classes and the ReadSWC class that processes SWC files.
+
+Constructors
+	public DiademMetric(File testSwcFile, File goldSwcFile, int dataset)
+	public DiademMetric(File testSwcFile, File goldSwcFile)
+
+Call to run the algorithm and make available the output data
+	public void scoreReconstruction() throws Exception
+
+Data accessors (getters and settings):
+	// Setting the dataset to one of the 6 predefined values will determine thresholds and the relationship between XY and Z
+	public void setDataset(int dataset)
+	public int getDataset()
+
+	public File getGoldSwcFile()
+	public void setGoldSwcFile(File goldSwcFile)
+
+	public File getTestSwcFile()
+	public void setTestSwcFile(File testSwcFile)
+
+	public int getWeightMode()
+	public void setWeightMode(int weightMode)
+
+	public boolean isMicrons()
+	public void setMicrons(boolean microns)
+
+	public double getXYThreshold()
+	public void setXYThreshold(double threshold)
+
+	public double getTerminalThreshold()
+	public void setTerminalThreshold(double terminalThreshold)
+
+	public double getTerminalPathThreshold()
+	public void setTerminalPathThreshold(double terminalPathThreshold)
+
+	public double getZThreshold()
+	public void setZThreshold(double threshold)
+
+	// Sets the raw Z threshold then calculates the ZThreshold using rawZThreshold and scaleZ (the XY/Z ratio)
+	public void setRawZThreshold(double threshold)
+	public double getRawZThreshold()
+
+	public double getXYPathErrorThreshold()
+	public void setXYPathErrorThreshold(double pathLengthThreshold)
+
+	public double getZPathErrorThreshold()
+	public void setZPathErrorThreshold(double pathLengthThreshold) {
+
+	// Determines whether the Z component is used to determine path length error
+	public boolean isZPath()
+	public void setZPath(boolean path)
+
+	// Distance below which branches will be excluded from scoring
+	public double getRemoveSpurs()
+	public void setRemoveSpurs(double removeSpurs)
+
+	// Determines whether the various node categories will be written to the stdout
+
+	public boolean isCountExcessNodes()
+	public void setCountExcessNodes(boolean countExcessNodes)
+
+	public boolean isListContinuations()
+	public void setListContinuations(boolean listContinuations)
+
+	public boolean isListDistantMatches()
+	public void setListDistantMatches(boolean listDistantMatches)
+
+	public boolean isListMisses()
+	public void setListMisses(boolean listMisses)
+
+	public double getFinalScore()
+	
+	// Sets the XY/Z ratio in member "scaleZ", then calculates the pixel 
+	// ZThreshold using the scaling factor and the rawZThreshold (in # of images)
+	public void setScaleZ(double scaleZ)
+	public double getScaleZ()
+	
+	// These return statements copy lists and maps, providing information about how individual nodes were classified and scored
+	
+	public List getMisses()
+	public List getContinuations()
+	public List getDistantMatches()
+	public List getSpurList()
+
+	// Keyed by node, value is the node's weight (Double)
+	public Map getWeightMap()
+
+	// keyed by test reconstruction nodes considered excess with node weight (Double)
+	public Map getExcessNodes()
+
+	// Returns the score produced by considering continuations as misses
+	public double getDirectMatchScore()
+
+	// Returns matches map with each node (gold standard and test) and its registered counterpart
+	public Map getMatches()
+
+Default values
+	public final static boolean DEFAULT_WEIGHTED = true;
+	public final static double DEFAULT_XY_THRESHOLD = 1.2;
+	public final static double DEFAULT_Z_THRESHOLD = 1;
+	public final static double DEFAULT_XY_PATH_THRESHOLD = 0.08;
+	public final static double DEFAULT_Z_PATH_THRESHOLD = 0.20;
+	public final static boolean DEFAULT_Z_PATH = false;
+	public final static double DEFAULT_REMOVE_SPURS = 1;
+	public final static double DEFAULT_TERMINAL_THRESHOLD = 0;
+	public final static double DEFAULT_TERMINAL_PATH_THRESHOLD = 0;
+	public final static double DEFAULT_PATH_LENGTH_THRESHOLD = .05;
+
+Dataset constants
+	public final static int DATASET_NONE = 0;
+	public final static int DATASET_CCF = 1;
+	public final static int DATASET_HC_CA3_INTERNEURON = 2;
+	public final static int DATASET_NC_LAYER1_AXONS = 3;
+	public final static int DATASET_NM_PROJECTION = 4;
+	public final static int DATASET_OLFACTORY_PROJECTION = 5;
+	public final static int DATASET_VISUAL_CORTICAL = 6;
+
+Weighting schemes
+	public final static int WEIGHT_DEGREE = 1;
+	public final static int WEIGHT_UNIFORM = 2;
+	public final static int WEIGHT_SQRT_DEGREE = 3;
+	public final static int WEIGHT_DEGREE_HARMONIC_MEAN = 4;
+	public final static int WEIGHT_PATH_LENGTH = 5;
+
+
+Debug variables: only usable when the program is compiled with the "mode" set to MODE_TEST_ENVIRONMENT
+	// If true, a large amount of information will be written to stdout
+	public void setDebug(boolean debug)
+        // If X and Y are set, debug information will be written to stdout when any gold standard node within XY treshold distance of the X and Y values are being processed. The same will happen for test nodes being considered as excess nodes.
+	public void setX(double x)
+	public void setY(double y)
+
+	public final static int MODE_TEST_ENVIRONMENT = 0;
+	// Usage is restricted to the data sets used in the competition
+	public final static int MODE_COMPETITION = 1;
+	// This is the mode anticipated for use by most people. Competition functionality is still available in this mode.
+	public final static int MODE_OPEN = 2;
