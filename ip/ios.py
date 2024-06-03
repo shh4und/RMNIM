@@ -29,8 +29,11 @@ def blended(imgs):
         blend_img = cv2.addWeighted(blend_img, 1, img, 1, 0)
     return blend_img
 
-def single_download(image, pathname):
-    return cv2.imwrite(pathname, image)
+def single_download(image, path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+        print("Path created.")
+    return cv2.imwrite(path, image)
 
 def download(images, path):
     if not os.path.exists(path):

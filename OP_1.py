@@ -1,6 +1,5 @@
 # # Olfactory Projection Fibers (OP_1)
 
-
 from ip.ios import *
 from ip.enhancement import *
 from ip.binary import *
