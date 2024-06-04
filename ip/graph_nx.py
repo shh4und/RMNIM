@@ -8,6 +8,7 @@ class Graph:
         self.image = image
         self.shape = image.shape
         self.root = None
+        self.node_id = 1  # Starting ID for nodes
 
     def add_edge_with_weight(self, voxel1, voxel2):
         weight = self.euclidean_distance(voxel1, voxel2)
@@ -22,10 +23,13 @@ class Graph:
 
     def create_graph(self):
         for z in range(self.shape[0]):
-            if mean_threshold(self.image[z,:,:]) == 0:
+            if self.image[z,:,:].sum() == 0:
                 print(f"skipped image{z}")
                 continue
             for y in range(self.shape[1]):
+                if self.image[z,y,:].sum() == 0:
+                    continue
+                    print(f"skipped {z}{y}")
                 for x in range(self.shape[2]):
                     if self.image[z, y, x] == 0:
                         continue
@@ -57,7 +61,33 @@ class Graph:
         mst = nx.minimum_spanning_tree(self.graph)
         return mst
 
-    def apply_dijkstra(self):
+    def apply_dijkstra_and_label_nodes(self):
         mst = self.get_mst()
         distances, paths = nx.single_source_dijkstra(mst, source=self.root, cutoff=None, weight='weight')
+
+        # Atualizando os nós com identidades e identidades dos pais
+        for node, path in enumerate(paths.values()):
+            for index, voxel in enumerate(path):
+                if index == 0:
+                    parent_id = -1  # Raiz tem parent_id como -1
+                else:
+                    parent_id = self.graph.nodes[path[index - 1]]['identity']
+                
+                if 'identity' not in self.graph.nodes[voxel]:
+                    self.graph.nodes[voxel]['identity'] = self.node_id
+                    self.node_id += 1
+                
+                self.graph.nodes[voxel]['parent'] = parent_id
+
         return distances, paths
+
+    def save_to_swc(self, filename):
+        ordered_nodes = sorted((node for node, attrs in self.graph.nodes(data=True) if 'identity' in attrs),
+                           key=lambda node_data: self.graph.nodes[node_data]['identity'])
+        with open(filename, 'w') as f:
+            for node in ordered_nodes:
+                attrs = self.graph.nodes(data=True)[node]
+                if 'identity' not in attrs:
+                    continue
+                z,y,x = node
+                f.write(f"{attrs['identity']} 2 {x} {y} {z} 1 {attrs['parent']}\n")
