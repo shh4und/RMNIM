@@ -30,9 +30,9 @@ def blended(imgs):
     return blend_img
 
 def single_download(image, path):
-    if not os.path.exists(path):
-        os.makedirs(path)
-        print("Path created.")
+    # if not os.path.exists(path):
+    #     os.makedirs(path)
+    #     print("Path created.")
     return cv2.imwrite(path, image)
 
 def download(images, path):
