@@ -16,4 +16,5 @@ class SWCFile:
             for point in self.data:
                 line = " ".join(map(str, point)) + "\n"
                 file.write(line)
+        print("SWC saved at: ", self.filename)
         return True

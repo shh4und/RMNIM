@@ -1,6 +1,7 @@
 import networkx as nx
 import numpy as np
 from ip.binary import *
+from ip.swc import *
 
 class Graph:
     def __init__(self, image):
@@ -23,16 +24,15 @@ class Graph:
 
     def create_graph(self):
         for z in range(self.shape[0]):
-            if self.image[z,:,:].sum() == 0:
-                print(f"skipped image{z}")
-                continue
+            # Skipped image (z): image with value 0 (black)
+            if self.image[z,:,:].sum() == 0: continue 
             for y in range(self.shape[1]):
-                if self.image[z,y,:].sum() == 0:
-                    continue
-                    print(f"skipped {z}{y}")
+                # Skipped row (z,y): row with value 0 (black)
+                if self.image[z,y,:].sum() == 0: continue 
                 for x in range(self.shape[2]):
-                    if self.image[z, y, x] == 0:
-                        continue
+                    # Skipped voxel (z,y,x): voxel with value 0 (black)
+                    if self.image[z, y, x] == 0:  continue
+                       
                     voxel = (z, y, x)
                     for neighbor in self.get_26_neighbors(voxel):
                         self.add_edge_with_weight(voxel, neighbor)
@@ -66,15 +66,15 @@ class Graph:
         distances, paths = nx.single_source_dijkstra(mst, source=self.root, cutoff=None, weight='weight')
 
         # Atualizando os nós com identidades e identidades dos pais
-        for node, path in enumerate(paths.values()):
+        for _, path in enumerate(paths.values()):
             for index, voxel in enumerate(path):
                 if index == 0:
                     parent_id = -1  # Raiz tem parent_id como -1
                 else:
-                    parent_id = self.graph.nodes[path[index - 1]]['identity']
+                    parent_id = self.graph.nodes[path[index - 1]]['id']
                 
-                if 'identity' not in self.graph.nodes[voxel]:
-                    self.graph.nodes[voxel]['identity'] = self.node_id
+                if 'id' not in self.graph.nodes[voxel]:
+                    self.graph.nodes[voxel]['id'] = self.node_id
                     self.node_id += 1
                 
                 self.graph.nodes[voxel]['parent'] = parent_id
@@ -82,12 +82,13 @@ class Graph:
         return distances, paths
 
     def save_to_swc(self, filename):
-        ordered_nodes = sorted((node for node, attrs in self.graph.nodes(data=True) if 'identity' in attrs),
-                           key=lambda node_data: self.graph.nodes[node_data]['identity'])
-        with open(filename, 'w') as f:
-            for node in ordered_nodes:
-                attrs = self.graph.nodes(data=True)[node]
-                if 'identity' not in attrs:
-                    continue
-                z,y,x = node
-                f.write(f"{attrs['identity']} 2 {x} {y} {z} 1 {attrs['parent']}\n")
+        
+        swc = SWCFile(filename)
+        nodes_data = self.graph.nodes(data=True)
+        for node,attrs in nodes_data:
+            if 'id' not in attrs:
+                continue
+            z,y,x = node
+            swc.add_point(attrs['id'], 2, x,y,z, 2.0, attrs['parent'])
+            
+        return swc.write_file()
