@@ -30,10 +30,10 @@ graph.set_root((2, 429, 34))
 graph.create_graph()
 root = graph.get_root()
 g_root = (30.979,429.04,0)
-print(f"OP_1 GOLD STANDARD ROOT:({g_root})\nTEST ROOT:({root})")
+print(f"OP_1 GOLD STANDARD ROOT: {g_root}\nTEST ROOT: {root}")
 
 distances, paths = graph.apply_dijkstra_and_label_nodes()
 
 print(len(distances), len(paths))
 
-graph.save_to_swc("./Test/optest2.swc")
+print("SWC generated:",graph.save_to_swc("./Test/OP_1.swc"))
