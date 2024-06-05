@@ -14,7 +14,7 @@ runmetric:
 	java -jar DiademMetric/DiademMetric.jar -G OlfactoryProjectionFibers/GoldStandardReconstructions/OP_$(STACK).swc -T Test/OP_$(STACK).swc -D $(DATASET_NUM)
 
 clean:
-	rm -rf ip/__pycache__ && rm -rf ip/.ipynb_checkpoints && rm -rf .ipynb_checkpoints 
+	rm -rf ip/__pycache__ && rm -rf ip/.ipynb_checkpoints && rm -rf .ipynb_checkpoints && rm -rf Test/.ipynb_checkpoints
 
 runpypy:
 	pypy OP_$(STACK).py
