@@ -23,12 +23,17 @@ class Graph:
         return distance
 
     def create_graph(self):
+        nimgs, nrows = 0, 0
         for z in range(self.shape[0]):
             # Skipped image (z): image with value 0 (black)
-            if self.image[z,:,:].sum() == 0: continue 
+            if self.image[z,:,:].sum() == 0:
+                nimgs+=1
+                continue 
             for y in range(self.shape[1]):
                 # Skipped row (z,y): row with value 0 (black)
-                if self.image[z,y,:].sum() == 0: continue 
+                if self.image[z,y,:].sum() == 0:
+                    nrows+=1
+                    continue 
                 for x in range(self.shape[2]):
                     # Skipped voxel (z,y,x): voxel with value 0 (black)
                     if self.image[z, y, x] == 0:  continue
@@ -36,7 +41,7 @@ class Graph:
                     voxel = (z, y, x)
                     for neighbor in self.get_26_neighbors(voxel):
                         self.add_edge_with_weight(voxel, neighbor)
-
+        print(f"Number of empty images: {nimgs}\nNumber of empty rows: {nrows}")
     def get_26_neighbors(self, voxel):
         z, y, x = voxel
         for i in range(-1, 2):  # Iterate over the 3x3x3 neighborhood
@@ -59,12 +64,13 @@ class Graph:
 
     def get_mst(self):
         mst = nx.minimum_spanning_tree(self.graph)
+        print("Minimum Spanning Tree Generated.")
         return mst
 
     def apply_dijkstra_and_label_nodes(self):
         mst = self.get_mst()
         distances, paths = nx.single_source_dijkstra(mst, source=self.root, cutoff=None, weight='weight')
-
+        print("Dijkstra has found the shortest weighted paths and lengths from the root node.")
         # Atualizando os nós com identidades e identidades dos pais
         for _, path in enumerate(paths.values()):
             for index, voxel in enumerate(path):
