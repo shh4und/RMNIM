@@ -8,6 +8,7 @@ from ip.split import *
 from skimage.morphology import skeletonize
 
 # ## Read Data
+
 folder_path = "./OlfactoryProjectionFibers/ImageStacks/OP_1"
 
 images = load_image_stack(folder_path)
@@ -22,6 +23,11 @@ threshold2 = mean_threshold(denoising, 15)
 binary2 = simple_binary(denoising, threshold2)
 
 skel = skeletonize(binary2)
+
+# ### For visualization purposes only
+
+blend = blended(skel)
+single_download(blend, "./Test/Images/OP_1_skel.png")
 
 # ### Graph generation
 
