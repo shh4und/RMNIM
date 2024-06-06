@@ -3,4 +3,4 @@ ip/__pycache__
 acc/*.txt
 *.pdf
 Test/*.swc
-Test/*.png
+Test/Images/*.png
