@@ -1,6 +1,8 @@
 ip/__pycache__
 .ipynb_checkpoints
-acc/*.txt
+acc/*
 *.pdf
-Test/*.swc
-Test/Images/*.png
+/Test/*
+!/Test/*.swc
+!/Test/Images/*/
+*.ipynb
