@@ -1,0 +1,13 @@
+Metric Realease Notes
+
+Version 2.1 (current) - May 4, 2012
+ - Fixed an error that occured when either reconstruction file contained a bifurcation at the second node/compartment. The error was a NullPointerException at line 410 of ReadSWC, method findParentTrajectory.
+ - Readme correction (June 27, 2012), fixing the description of the dataset parameter (not required after the post-competition release).
+
+Version 2.0 (post-competition) - January 13, 2011
+ - Provides input parameters for setting threshold values.
+ - Provides input parameter for choosing one of four score weighting schemes.
+ - Provides input parameter for setting a minimum terminal branch length (for removing "spurs").
+ - Provides input parameters for listing nodes missed by the test reconstruction, nodes scored as "continuations", nodes scored as "distant matches", and excess nodes in the test reconstruction.
+
+Previous versions released during the competition fixed various bugs.
