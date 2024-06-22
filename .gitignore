@@ -1,8 +1,0 @@
-ip/__pycache__
-.ipynb_checkpoints
-acc/*
-*.pdf
-/Test/*
-!/Test/*.swc
-!/Test/Images/*/
-*.ipynb
