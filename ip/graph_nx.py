@@ -53,7 +53,7 @@ class Graph:
                     # Check if the new coordinates are within the image bounds
                     if 0 <= new_z < self.shape[0] and 0 <= new_y < self.shape[1] and 0 <= new_x < self.shape[2]:
                         # Check if the voxel at the new coordinates is white
-                        if self.image[new_z, new_y, new_x] == 255:
+                        if self.image[new_z, new_y, new_x] != 0:
                             yield (new_z, new_y, new_x)
 
     def set_root(self, root_voxel):
@@ -68,8 +68,8 @@ class Graph:
         return mst
 
     def apply_dijkstra_and_label_nodes(self):
-        mst = self.get_mst()
-        distances, paths = nx.single_source_dijkstra(mst, source=self.root, cutoff=None, weight='weight')
+        # mst = self.get_mst()
+        distances, paths = nx.single_source_dijkstra(self.graph, source=self.root, cutoff=None, weight='weight')
         print("Dijkstra has found the shortest weighted paths and lengths from the root node.")
         # Atualizando os nós com identidades e identidades dos pais
         for _, path in enumerate(paths.values()):
