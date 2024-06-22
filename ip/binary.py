@@ -30,7 +30,7 @@ def skel_zhang_suen(images):
     return np.array([cv2.ximgproc.thinning(img) for img in images])
 
 def mean_threshold(img, factor=1):
-    return (img.sum() / img.size) * factor
+    return np.ceil((img.sum() / img.size) * factor)
 
 # Exemplo de uso com paralelização para a função otsu_binary
 def otsu_binary_parallel(images, num_threads=4):
