@@ -27,7 +27,7 @@ def median_blur(images, n):
     """
     return np.array([cv2.medianBlur(img, n) for img in images])
 
-def gaussian_blur(images, n):
+def gaussian_blur(images, n=0, sig=2.0):
     """
     Apply Gaussian Blurring to a list of images.
     
@@ -38,7 +38,7 @@ def gaussian_blur(images, n):
     Returns:
     - An array of blurred images.
     """
-    return np.array([cv2.GaussianBlur(img, (n, n), 0) for img in images])
+    return np.array([cv2.GaussianBlur(img, (n, n), sigmaX=sig) for img in images])
 
 def mean_blur(images, n):
     """
@@ -52,3 +52,18 @@ def mean_blur(images, n):
     - An array of blurred images.
     """
     return np.array([cv2.boxFilter(img, -1, (n, n)) for img in images])
+
+def bilateral_blur(images, n=9, sigcolor=75, sigspace=75):
+    """
+    Apply Bilateral Filtering to a list of images.
+    
+    Parameters:
+    - images: A list of images.
+    - n: Kernel size for the Bilateral Filter.
+    - sigcolor: Filter sigma in the color space.
+    - sigspace: Filter sigma in the coordinate space.
+    
+    Returns:
+    - An array of blurred images.
+    """
+    return np.array([cv2.bilateralFilter(img, n, sigmaColor=sigcolor, sigmaSpace=sigspace) for img in images])
