@@ -3,12 +3,13 @@ import numpy as np
 from ip.binary import *
 from ip.swc import *
 
+
 class Graph:
     def __init__(self, image):
         self.graph = nx.Graph()
         self.image = image
         self.shape = image.shape
-        self.root = None
+        self.root = (0,0,0)
         self.node_id = 1  # Starting ID for nodes
 
     def add_edge_with_weight(self, voxel1, voxel2):
@@ -24,37 +25,52 @@ class Graph:
 
     def create_graph(self):
         nimgs, nrows = 0, 0
-        for z in range(self.shape[0]):
-            # Skipped image (z): image with value 0 (black)
-            if self.image[z,:,:].sum() == 0:
-                nimgs+=1
-                continue 
-            for y in range(self.shape[1]):
-                # Skipped row (z,y): row with value 0 (black)
-                if self.image[z,y,:].sum() == 0:
-                    nrows+=1
-                    continue 
-                for x in range(self.shape[2]):
-                    # Skipped voxel (z,y,x): voxel with value 0 (black)
-                    if self.image[z, y, x] == 0:  continue
-                       
-                    voxel = (z, y, x)
-                    for neighbor in self.get_26_neighbors(voxel):
-                        self.add_edge_with_weight(voxel, neighbor)
-        print(f"Number of empty images: {nimgs}\nNumber of empty rows: {nrows}")
-    def get_26_neighbors(self, voxel):
+        non_zero_voxels = np.nonzero(self.image)  # Get indices of all non-zero voxels
+        for z, y, x in zip(*non_zero_voxels):
+            voxel = (z, y, x)
+            for neighbor in self.get_26_neighborhood(voxel):
+                nz, ny, nx = neighbor
+                # Check if the voxel at the new coordinates is foreground
+                if (
+                    0 <= nz < self.shape[0]
+                    and 0 <= ny < self.shape[1]
+                    and 0 <= nx < self.shape[2]
+                    and self.image[nz, ny, nx] != 0
+                ):
+                    self.add_edge_with_weight(voxel, neighbor)
+        
+        print(">> Graph created")
+
+    def get_26_neighborhood(self, voxel):
         z, y, x = voxel
-        for i in range(-1, 2):  # Iterate over the 3x3x3 neighborhood
-            for j in range(-1, 2):
-                for k in range(-1, 2):
-                    if i == 0 and j == 0 and k == 0:
-                        continue  # Skip the center voxel itself
-                    new_z, new_y, new_x = z + i, y + j, x + k
-                    # Check if the new coordinates are within the image bounds
-                    if 0 <= new_z < self.shape[0] and 0 <= new_y < self.shape[1] and 0 <= new_x < self.shape[2]:
-                        # Check if the voxel at the new coordinates is white
-                        if self.image[new_z, new_y, new_x] != 0:
-                            yield (new_z, new_y, new_x)
+        return [
+            (z + 1, y, x),
+            (z - 1, y, x),
+            (z, y + 1, x),
+            (z, y - 1, x),
+            (z, y, x + 1),
+            (z, y, x - 1),
+            (z + 1, y + 1, x),
+            (z + 1, y - 1, x),
+            (z - 1, y + 1, x),
+            (z - 1, y - 1, x),
+            (z + 1, y, x + 1),
+            (z + 1, y, x - 1),
+            (z - 1, y, x + 1),
+            (z - 1, y, x - 1),
+            (z, y + 1, x + 1),
+            (z, y + 1, x - 1),
+            (z, y - 1, x + 1),
+            (z, y - 1, x - 1),
+            (z + 1, y + 1, x + 1),
+            (z + 1, y + 1, x - 1),
+            (z + 1, y - 1, x + 1),
+            (z + 1, y - 1, x - 1),
+            (z - 1, y + 1, x + 1),
+            (z - 1, y + 1, x - 1),
+            (z - 1, y - 1, x + 1),
+            (z - 1, y - 1, x - 1),
+        ]
 
     def set_root(self, root_voxel):
         self.root = root_voxel
@@ -64,37 +80,38 @@ class Graph:
 
     def get_mst(self):
         mst = nx.minimum_spanning_tree(self.graph)
-        print("Minimum Spanning Tree Generated.")
+        print(">> Minimum Spanning Tree Generated")
+        print(">> Minimum Spanning Tree length:",len(mst))
         return mst
 
-    def apply_dijkstra_and_label_nodes(self):
-        # mst = self.get_mst()
-        distances, paths = nx.single_source_dijkstra(self.graph, source=self.root, cutoff=None, weight='weight')
-        print("Dijkstra has found the shortest weighted paths and lengths from the root node.")
-        # Atualizando os nós com identidades e identidades dos pais
-        for _, path in enumerate(paths.values()):
-            for index, voxel in enumerate(path):
-                if index == 0:
-                    parent_id = -1  # Raiz tem parent_id como -1
-                else:
-                    parent_id = self.graph.nodes[path[index - 1]]['id']
-                
-                if 'id' not in self.graph.nodes[voxel]:
-                    self.graph.nodes[voxel]['id'] = self.node_id
-                    self.node_id += 1
-                
-                self.graph.nodes[voxel]['parent'] = parent_id
+    def apply_dfs_and_label_nodes(self):
+        mst = self.get_mst()
+        visited = set()  # Keep track of visited nodes
+        stack = [(self.root, -1)]  # Initialize stack with root and parent_id -1
+        node_id = 1  # Start ID assignment from 0
 
-        return distances, paths
+        while stack:
+            voxel, parent_id = stack.pop()
+            if voxel not in visited:
+                visited.add(voxel)
+                if "id" not in self.graph.nodes[voxel]:
+                    self.graph.nodes[voxel]["id"] = node_id
+                    node_id += 1
+                self.graph.nodes[voxel]["parent"] = parent_id
+                # Add children to stack
+                stack.extend((neighbor, self.graph.nodes[voxel]["id"]) for neighbor in mst.neighbors(voxel))
 
+        print(">> Depth-First search and labeling complete")
+        return mst
+    
     def save_to_swc(self, filename):
-        
+
         swc = SWCFile(filename)
         nodes_data = self.graph.nodes(data=True)
-        for node,attrs in nodes_data:
-            if 'id' not in attrs:
+        for node, attrs in nodes_data:
+            if "id" not in attrs:
                 continue
-            z,y,x = node
-            swc.add_point(attrs['id'], 2, x,y,z, 0.5, attrs['parent'])
-            
+            z, y, x = node
+            swc.add_point(attrs["id"], 2, x, y, z, 0.5, attrs["parent"])
+
         return swc.write_file()
