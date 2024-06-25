@@ -23,23 +23,20 @@ threshold2 = mean_threshold(denoising, 15)
 binary2 = simple_binary(denoising, threshold2)
 
 skel = skeletonize(binary2)
-
 # ### For visualization purposes only
 
-blend = blended(skel)
-single_download(blend, "./Test/Images/OP_1_skel.png")
+# blend = blended(skel)
+# single_download(blend, "./Test/Images/OP_1_skel.png")
 
 # ### Graph generation
 
 graph = Graph(skel)
-graph.set_root((2, 429, 34))
+graph.set_root((2, 428, 33))
 graph.create_graph()
-root = graph.get_root()
+root = list(graph.get_root())[::-1]
 g_root = (30.979,429.04,0)
-print(f"OP_1 GOLD STANDARD ROOT: {g_root}\nTEST ROOT: {root}")
+print(f"OP_1 GOLD STANDARD ROOT: {g_root}\nTEST ROOT: {tuple(root)}")
 
-distances, paths = graph.apply_dijkstra_and_label_nodes()
+mst = graph.apply_dfs_and_label_nodes()
 
-print(len(distances), len(paths))
-
-print("SWC generated:",graph.save_to_swc("./Test/OP_1.swc"))
+graph.save_to_swc("./Test/OP_1.swc")
