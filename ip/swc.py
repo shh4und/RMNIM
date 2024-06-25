@@ -6,6 +6,7 @@ class SWCFile:
     
     def add_point(self, identity, structure_type, x, y, z, radius, parent_identity):
         if identity <= 0 or parent_identity >= identity or (parent_identity != -1 and parent_identity <= 0):
+            print(f"identity value -> {identity}, parent value -> {parent_identity}")
             raise ValueError("Invalid identity or parent_identity values")
         self.data.append((identity, structure_type, x, y, z, radius, parent_identity))
     
@@ -16,5 +17,5 @@ class SWCFile:
             for point in self.data:
                 line = " ".join(map(str, point)) + "\n"
                 file.write(line)
-        print("SWC saved at:", self.filename)
+        print(">> SWC saved at:", self.filename)
         return True
