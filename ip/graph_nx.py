@@ -1,6 +1,5 @@
 import networkx as nx
 import numpy as np
-from ip.binary import *
 from ip.swc import *
 
 
@@ -10,8 +9,6 @@ class Graph:
         self.image = image
         self.shape = image.shape
         self.root = (0,0,0)
-        self.node_id = 1  # Starting ID for nodes
-
     def add_edge_with_weight(self, voxel1, voxel2):
         weight = self.euclidean_distance(voxel1, voxel2)
         self.graph.add_edge(voxel1, voxel2, weight=weight)
@@ -42,6 +39,7 @@ class Graph:
         print(">> Graph created")
 
     def get_26_neighborhood(self, voxel):
+        # returns a list of all possible neighbors of voxel
         z, y, x = voxel
         return [
             (z + 1, y, x),
@@ -85,10 +83,11 @@ class Graph:
         return mst
 
     def apply_dfs_and_label_nodes(self):
+        # apply the dfs for labeling the nodes over the mst generated 
         mst = self.get_mst()
         visited = set()  # Keep track of visited nodes
         stack = [(self.root, -1)]  # Initialize stack with root and parent_id -1
-        node_id = 1  # Start ID assignment from 0
+        node_id = 1  # Start ID assignment from 1, following the SWC pattern
 
         while stack:
             voxel, parent_id = stack.pop()
