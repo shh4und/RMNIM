@@ -14,26 +14,30 @@ images = load_image_stack(folder_path)
 
 ##Code Process and Execution
 
-split = split_and_process_stack(images, 17, 3)
+bilateral = bilateral_blur(images, 11, 225, 225)
 
-skel = skeletonize(split)
+threshold1 = mean_threshold(bilateral,5)
+binary1 = simple_binary(bilateral, threshold1)
+seg1 = segment(bilateral, binary1)
 
+threshold2 = mean_threshold(seg1, 5)
+binary2 = simple_binary(seg1, threshold2)
+skel = img_as_ubyte(skeletonize(binary2))
 ##For visualization purposes only
 
 blend = blended(skel)
 single_download(blend, "./Test/Images/OP_3_skel.png")
 
+
+
 ##Graph generation
 
 graph = Graph(skel)
-graph.set_root((38, 180, 94))
+graph.set_root((37, 180, 95))
 graph.create_graph()
 root = graph.get_root()
 g_root = (93.742,179,38)
 print(f"OP_3 GOLD STANDARD ROOT: {g_root}\nTEST ROOT: {root}")
 
-distances, paths = graph.apply_dijkstra_and_label_nodes()
-
-print(f"from dijkstra -> len(distances): {len(distances)}, len(paths): {len(paths)}")
-
-print("SWC generated:",graph.save_to_swc("./Test/OP_3.swc"))
+mst = graph.apply_dfs_and_label_nodes()
+graph.save_to_swc("./Test/OP_3.swc")
