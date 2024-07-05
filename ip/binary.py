@@ -34,7 +34,8 @@ def simple_binary(images: np.ndarray, thresh: int) -> np.ndarray:
     Returns:
         NDArray: returns a binary mask of the given image stack
     """
-    return np.array(images > thresh).astype(images.dtype)
+    
+    return np.array([cv2.threshold(img, thresh, 255, cv2.THRESH_BINARY)[1] for img in images])
 
 def morphological(images: np.ndarray, op, shape_kernel, size_kernel: tuple[int]) -> np.ndarray:
     """Function to apply morphological operation from OpenCV lib over a given image stack
