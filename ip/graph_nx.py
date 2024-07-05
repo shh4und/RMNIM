@@ -93,24 +93,24 @@ class Graph:
             voxel, parent_id = stack.pop()
             if voxel not in visited:
                 visited.add(voxel)
-                if "id" not in self.graph.nodes[voxel]:
-                    self.graph.nodes[voxel]["id"] = node_id
+                if "id" not in mst.nodes[voxel]:
+                    mst.nodes[voxel]["id"] = node_id
                     node_id += 1
-                self.graph.nodes[voxel]["parent"] = parent_id
+                mst.nodes[voxel]["parent"] = parent_id
                 # Add children to stack
-                stack.extend((neighbor, self.graph.nodes[voxel]["id"]) for neighbor in mst.neighbors(voxel))
+                stack.extend((neighbor, mst.nodes[voxel]["id"]) for neighbor in mst.neighbors(voxel))
 
         print(">> Depth-First search and labeling complete")
         return mst
     
-    def save_to_swc(self, filename):
+    def save_to_swc(self,mst,filename, width=1.0):
 
         swc = SWCFile(filename)
-        nodes_data = self.graph.nodes(data=True)
-        for node, attrs in nodes_data:
+        mst_nodes_data = mst.nodes(data=True)
+        for node, attrs in mst_nodes_data:
             if "id" not in attrs:
                 continue
             z, y, x = node
-            swc.add_point(attrs["id"], 2, x, y, z, 0.5, attrs["parent"])
+            swc.add_point(attrs["id"], 2, x, y, z, width, attrs["parent"])
 
         return swc.write_file()
