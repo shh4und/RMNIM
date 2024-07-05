@@ -3,7 +3,16 @@ import numpy as np
 import os
 import re
 
-def load_image_stack(folder):
+def load_tif_stack(folder:str) -> np.ndarray:
+    """Function to load and order the images by its filename from an image stack folder
+    (with .tif extension)
+
+    Args:
+        folder (str): stack directory path name
+
+    Returns:
+        np.ndarray: an ordered stack 
+    """
     images = []
     tiff_files = sorted([f for f in os.listdir(folder) if re.match(r".*\.tif$", f)], key=lambda x: int(re.findall(r"\d+", x)[0]))
     for filename in tiff_files:
@@ -29,13 +38,28 @@ def blended(imgs):
         blend_img = cv2.addWeighted(blend_img, 1, img, 1, 0)
     return blend_img
 
-def single_download(image, path):
-    # if not os.path.exists(path):
-    #     os.makedirs(path)
-    #     print("Path created.")
+def single_download(image:np.ndarray, path:str) -> bool:
+    """Function to download a single image
+
+    Args:
+        image (np.ndarray): a given image
+        path (str): path where to downloaded the image
+
+    Returns:
+        bool: confirms if succesfully downloaded
+    """
     return cv2.imwrite(path, image)
 
-def download(images, path):
+def download(images:np.ndarray, path:str) -> bool:
+    """Function to download a whole image stack
+    if it fails, it will show which index it fails at 
+    Args:
+        images (np.ndarray): a given image stack
+        path (str): path where to downloaded the stack
+
+    Returns:
+        bool: returns True if successfully downloaded
+    """
     if not os.path.exists(path):
         os.makedirs(path)
         print("Path created.")
