@@ -47,4 +47,4 @@ print(f"OP_1 GOLD STANDARD ROOT: {g_root}\nTEST ROOT: {root}")
 
 mst = graph.apply_dfs_and_label_nodes()
 
-graph.save_to_swc("./Test/OP_1.swc")
+graph.save_to_swc("./Test/OP_1.swc", 1.2)
