@@ -3,5 +3,6 @@ ip/__pycache__
 acc/*
 *.pdf
 /Test/*
-!/Test/Images/*/
+!/Test/*.swc
 *.ipynb
+.vscode
