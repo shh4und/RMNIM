@@ -13,7 +13,7 @@ from scipy import ndimage
 
 folder_path = "./OlfactoryProjectionFibers/ImageStacks/OP_1"
 
-images = load_image_stack(folder_path)
+images = load_tif_stack(folder_path)
 
 # ## Code Process and Execution
 
@@ -47,4 +47,4 @@ print(f"OP_1 GOLD STANDARD ROOT: {g_root}\nTEST ROOT: {root}")
 
 mst = graph.apply_dfs_and_label_nodes()
 
-graph.save_to_swc("./Test/OP_1.swc", 1.2)
+graph.save_to_swc(mst, "./Test/OP_1.swc", 1.2)
