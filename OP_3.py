@@ -4,13 +4,14 @@ from ip.binary import *
 from ip.graph_nx import *
 from ip.swc import *
 from ip.split import *
+from skimage.util import img_as_ubyte
 from skimage.morphology import skeletonize
 
 # Read Data
 
 folder_path = "./OlfactoryProjectionFibers/ImageStacks/OP_3"
 
-images = load_image_stack(folder_path)
+images = load_tif_stack(folder_path)
 
 ##Code Process and Execution
 
@@ -40,4 +41,4 @@ g_root = (93.742,179,38)
 print(f"OP_3 GOLD STANDARD ROOT: {g_root}\nTEST ROOT: {root}")
 
 mst = graph.apply_dfs_and_label_nodes()
-graph.save_to_swc("./Test/OP_3.swc")
+graph.save_to_swc(mst,"./Test/OP_3.swc")

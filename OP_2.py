@@ -12,7 +12,7 @@ from scipy import ndimage
 # ## Read Data
 
 folder_path = "./OlfactoryProjectionFibers/ImageStacks/OP_2"
-images = load_image_stack(folder_path)
+images = load_tif_stack(folder_path)
 
 bilateral = bilateral_blur(images, 11, 200, 200)
 # bilateral = bilateral_blur(images, 9, 200, 200) Score: 0,781
@@ -36,4 +36,4 @@ print(f"OP_1 GOLD STANDARD ROOT: {g_root}\nTEST ROOT: {tuple(root)}")
 
 mst = graph.apply_dfs_and_label_nodes()
 
-graph.save_to_swc("./Test/OP_2.swc")
+graph.save_to_swc(mst,"./Test/OP_2.swc")
