@@ -18,16 +18,16 @@ images = load_tif_stack(folder_path)
 # ## Code Process and Execution
 
 bilateral = bilateral_blur(images, 9, 175, 175)
+gaussian = ndimage.gaussian_filter(bilateral, 1.5)
 
-threshold1 = mean_threshold(bilateral)
-binary1 = simple_binary(bilateral, threshold1)
-seg1 = segment(bilateral, binary1)
+threshold1 = mean_threshold(gaussian)
+binary1 = simple_binary(gaussian, threshold1)
+seg1 = segment(gaussian, binary1)
 
 threshold2 = mean_threshold(seg1)
 binary2 = simple_binary(seg1, threshold2)
 
-strel3 = create_spherical_strel(3)
-eroded3 = ndimage.binary_erosion(binary2, strel3)
+eroded3 = ndimage.binary_erosion(binary2)
 
 
 skel_op3 = img_as_ubyte(skeletonize(eroded3))
@@ -39,7 +39,7 @@ skel_op3 = img_as_ubyte(skeletonize(eroded3))
 # ### Graph generation
 
 graph = Graph(skel_op3)
-graph.set_root((3, 429, 34))
+graph.set_root((2, 433, 29))
 graph.create_graph()
 root = graph.get_root()
 g_root = (30.979,429.04,0)
