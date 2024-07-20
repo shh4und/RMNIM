@@ -17,10 +17,11 @@ class Graph:
     def euclidean_distance(self, point1, point2):
         z1, y1, x1 = point1
         z2, y2, x2 = point2
-        squared_differences = (x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2
-        distance = np.sqrt(squared_differences)
-        return distance
-
+        squared_diff_xy = (x2 - x1) ** 2 + (y2 - y1) ** 2
+        #squared_diff_z = (z2 - z1) ** 2
+        distance_xy = np.sqrt(squared_diff_xy)
+        #distance_z = np.sqrt(squared_diff_z)
+        return distance_xy
     def create_graph(self):
         nimgs, nrows = 0, 0
         non_zero_voxels = np.nonzero(self.image)  # Get indices of all non-zero voxels
