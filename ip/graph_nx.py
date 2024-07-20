@@ -113,6 +113,6 @@ class Graph:
             if "id" not in attrs:
                 continue
             z, y, x = node
-            swc.add_point(attrs["id"], 2, x, y, z, width, attrs["parent"])
+            swc.add_point(attrs["id"], 9, x, y, z, width, attrs["parent"])
 
         return swc.write_file()
