@@ -79,7 +79,7 @@ class Graph:
         return self.root
 
     def get_mst(self):
-        mst = nx.minimum_spanning_tree(self.graph)
+        mst = nx.minimum_spanning_tree(self.graph, weight="weight", algorithm="prim")
         print(">> Minimum Spanning Tree Generated")
         print(">> Minimum Spanning Tree length:",len(mst))
         return mst
