@@ -10,8 +10,9 @@ class Graph:
         self.shape = image.shape
         self.root = (0,0,0)
     def add_edge_with_weight(self, voxel1, voxel2):
-        weight = self.euclidean_distance(voxel1, voxel2)
-        self.graph.add_edge(voxel1, voxel2, weight=weight)
+        if not self.graph.has_edge(voxel1, voxel2):
+            weight = self.euclidean_distance(voxel1, voxel2)
+            self.graph.add_edge(voxel1, voxel2, weight=weight)
 
     def euclidean_distance(self, point1, point2):
         z1, y1, x1 = point1
