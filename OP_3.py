@@ -6,6 +6,8 @@ from ip.swc import *
 from ip.split import *
 from skimage.util import img_as_ubyte
 from skimage.morphology import skeletonize
+from scipy import ndimage
+
 
 # Read Data
 
@@ -15,25 +17,35 @@ images = load_tif_stack(folder_path)
 
 ##Code Process and Execution
 
-bilateral = bilateral_blur(images, 11, 225, 225)
+bilateral = bilateral_blur(images, 11, 75, 50)
 
-threshold1 = mean_threshold(bilateral,5)
-binary1 = simple_binary(bilateral, threshold1)
-seg1 = segment(bilateral, binary1)
+# threshold1 = mean_threshold(bilateral,5)
+# binary1 = simple_binary(bilateral, threshold1)
+# seg1 = segment(bilateral, binary1)
+# binary2 = simple_binary(seg1, threshold1)
+# skel = img_as_ubyte(skeletonize(binary2))
 
-threshold2 = mean_threshold(seg1, 5)
-binary2 = simple_binary(seg1, threshold2)
-skel = img_as_ubyte(skeletonize(binary2))
+
+binary3 = simple_binary(bilateral, mean_threshold(bilateral,7))
+seg1 = segment(bilateral, binary3)
+threshold2 = mean_threshold(seg1)
+binary3 = simple_binary(seg1, threshold2)
+eroded = ndimage.binary_opening(binary3)
+
+skel2 = img_as_ubyte(skeletonize(eroded))
+
 ##For visualization purposes only
 
-blend = blended(skel)
-single_download(blend, "./Test/Images/OP_3_skel.png")
+# blend = blended(skel)
+#single_download(blend, "./Test/Images/OP_3_skel.png")
 
+# cv2_imshow([blended(eroded)])
+# cv2_imshow(skel2[35:39])
 
 
 ##Graph generation
 
-graph = Graph(skel)
+graph = Graph(skel2)
 graph.set_root((37, 180, 95))
 graph.create_graph()
 root = graph.get_root()
