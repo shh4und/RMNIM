@@ -1,30 +1,30 @@
 import networkx as nx
 import numpy as np
 from ip.swc import *
-
+from typing import Tuple, Optional, List
 
 class Graph:
-    def __init__(self, image):
+    def __init__(self, image: np.ndarray):
         self.graph = nx.Graph()
         self.image = image
         self.shape = image.shape
-        self.root = (0,0,0)
-    def add_edge_with_weight(self, voxel1, voxel2):
+        self.root: Tuple[int, int, int] = (0, 0, 0)
+
+    def add_edge_with_weight(self, voxel1: Tuple[int, int, int], voxel2: Tuple[int, int, int]):
         if not self.graph.has_edge(voxel1, voxel2):
             weight = self.euclidean_distance(voxel1, voxel2)
             self.graph.add_edge(voxel1, voxel2, weight=weight)
 
-    def euclidean_distance(self, point1, point2):
+    def euclidean_distance(self, point1: Tuple[int, int, int], point2: Tuple[int, int, int]) -> float:
         z1, y1, x1 = point1
         z2, y2, x2 = point2
         squared_diff_xy = (x2 - x1) ** 2 + (y2 - y1) ** 2
-        #squared_diff_z = (z2 - z1) ** 2
         distance_xy = np.sqrt(squared_diff_xy)
-        #distance_z = np.sqrt(squared_diff_z)
         return distance_xy
-    def create_graph(self):
+
+    def create_graph(self) -> None:
         y = self.root[1]
-        self.image[:,y+1,:] = 0
+        self.image[:, y+1:, :] = 0
         non_zero_voxels = np.nonzero(self.image)  # Get indices of all non-zero voxels
         for z, y, x in zip(*non_zero_voxels):
             voxel = (z, y, x)
@@ -41,7 +41,7 @@ class Graph:
         
         print(">> Graph created")
 
-    def get_26_neighborhood(self, voxel):
+    def get_26_neighborhood(self, voxel: Tuple[int, int, int]) -> List[Tuple[int, int, int]]:
         # returns a list of all possible neighbors of voxel
         z, y, x = voxel
         return [
@@ -73,19 +73,19 @@ class Graph:
             (z - 1, y - 1, x - 1),
         ]
 
-    def set_root(self, root_voxel):
+    def set_root(self, root_voxel: Tuple[int, int, int]) -> None:
         self.root = root_voxel
 
-    def get_root(self):
+    def get_root(self) -> Tuple[int, int, int]:
         return self.root
 
-    def get_mst(self):
+    def get_mst(self) -> nx.Graph:
         mst = nx.minimum_spanning_tree(self.graph, weight="weight", algorithm="prim")
         print(">> Minimum Spanning Tree Generated")
-        print(">> Minimum Spanning Tree length:",len(mst))
+        print(">> Minimum Spanning Tree length:", len(mst))
         return mst
 
-    def apply_dfs_and_label_nodes(self):
+    def apply_dfs_and_label_nodes(self) -> nx.Graph:
         # apply the dfs for labeling the nodes over the mst generated 
         mst = self.get_mst()
         visited = set()  # Keep track of visited nodes
@@ -106,8 +106,7 @@ class Graph:
         print(">> Depth-First search and labeling complete")
         return mst
     
-    def save_to_swc(self,mst,filename, width=1.0):
-
+    def save_to_swc(self, mst: nx.Graph, filename: str, width: float = 1.0) -> bool:
         swc = SWCFile(filename)
         mst_nodes_data = mst.nodes(data=True)
         for node, attrs in mst_nodes_data:
