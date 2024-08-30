@@ -1,0 +1,3 @@
+time cpu: 5.27s
+time sys: 0.20s
+Score: 0,708
