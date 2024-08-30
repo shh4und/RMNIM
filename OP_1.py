@@ -3,7 +3,6 @@ from ip.enhancement import *
 from ip.binary import *
 from ip.graph_nx import *
 from ip.swc import *
-from ip.split import *
 from ip.utils import *
 from skimage.morphology import skeletonize
 from skimage.util import img_as_ubyte
