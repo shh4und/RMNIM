@@ -1,45 +1,35 @@
-
 from ip.ios import *
 from ip.enhancement import *
 from ip.binary import *
 from ip.graph_nx import *
 from ip.swc import *
 from ip.split import *
+from skimage.util import img_as_ubyte
 from skimage.morphology import skeletonize
+from scipy import ndimage
 
 # ## Read Data
 
 folder_path = "./OlfactoryProjectionFibers/ImageStacks/OP_4"
-
-images = load_image_stack(folder_path)
+images = load_tif_stack(folder_path)
 
 # ## Code Process and Execution
 
-threshold1 = mean_threshold(images, 15)
-binary1 = simple_binary(images, threshold1)
-seg = segment(images, binary1)
-denoising = median_blur(seg, 5)
-threshold2 = mean_threshold(denoising, 15)
-binary2 = simple_binary(denoising, threshold2)
+bilateral = bilateral_blur(images, 9, 175, 175)
+threshold1 = mean_threshold(bilateral)
+binary1 = simple_binary(bilateral, threshold1)
+seg1 = segment(bilateral, binary1)
 
-skel = skeletonize(binary2)
-
-# ### For visualization purposes only
-
-blend = blended(skel)
-single_download(blend, "./Test/Images/OP_4_skel.png")
-
-# ### Graph generation
-
+threshold2 = mean_threshold(seg1)
+binary2 = simple_binary(seg1, threshold2)
+eroded3d = img_as_ubyte(ndimage.binary_erosion(binary2))
+skel = img_as_ubyte(skeletonize(eroded3d))
 graph = Graph(skel)
-graph.set_root()
+graph.set_root((3, 504, 128))
 graph.create_graph()
 root = graph.get_root()
 g_root = (128.2,504.37,0.3)
-print(f"OP_4 GOLD STANDARD ROOT: {g_root}\nTEST ROOT: {root}")
+print(f"OP_1 GOLD STANDARD ROOT: {g_root}\nTEST ROOT: {root}")
 
-distances, paths = graph.apply_dijkstra_and_label_nodes()
-
-print(len(distances), len(paths))
-
-print("SWC generated:",graph.save_to_swc("./Test/OP_4.swc"))
+mst = graph.apply_dfs_and_label_nodes()
+graph.save_to_swc(mst,"./Test/OP_4.swc",1.2)

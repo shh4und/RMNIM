@@ -40,7 +40,7 @@ skel2 = img_as_ubyte(skeletonize(eroded))
 #single_download(blend, "./Test/Images/OP_3_skel.png")
 
 # cv2_imshow([blended(eroded)])
-# cv2_imshow(skel2[35:39])
+cv2_imshow(blended(skel2))
 
 
 ##Graph generation
@@ -53,4 +53,4 @@ g_root = (93.742,179,38)
 print(f"OP_3 GOLD STANDARD ROOT: {g_root}\nTEST ROOT: {root}")
 
 mst = graph.apply_dfs_and_label_nodes()
-graph.save_to_swc(mst,"./Test/OP_3.swc")
+graph.save_to_swc(mst,"./Test/OP_3exp.swc")
