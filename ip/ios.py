@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import os
 import re
+from ip.utils import *
 
 def load_tif_stack(folder:str) -> np.ndarray:
     """Function to load and order the images by its filename from an image stack folder
@@ -26,16 +27,32 @@ def load_tif_stack(folder:str) -> np.ndarray:
     return np.stack(images, axis=0)
 
 def cv2_imshow(imgs):
-    for x in range( len(imgs)):
-        cv2.imshow(f"img {x}", imgs[x])
+    if len(np.array(imgs).shape) < 3:
+        stack3d = np.array([imgs])
+    else:
+        stack3d = imgs
+    x = 1
+    for img in stack3d:
+        cv2.imshow(f"img 0{x}", img)
+        x+=1
     cv2.waitKey(0)
     cv2.destroyAllWindows()
     return True
 
-def blended(imgs):
-    blend_img = imgs[0]
-    for img in imgs[1:]:
-        blend_img = cv2.addWeighted(blend_img, 1, img, 1, 0)
+def blended(imgs, proportion=False):
+    if proportion:
+        N = len(imgs)   
+        weight = 1.0 / N 
+
+        blend_img = normalize_image_float(imgs[0]) * weight
+        for img in imgs[1:]:
+            img = normalize_image_float(img)
+            blend_img = cv2.addWeighted(blend_img, 1.0, img, weight, 0)
+        blend_img = normalize_image_int(blend_img)
+    else:
+        blend_img = imgs[0]
+        for img in imgs[1:]:
+            blend_img = cv2.addWeighted(blend_img, 1, img, 1, 0)
     return blend_img
 
 def single_download(image:np.ndarray, path:str) -> bool:
