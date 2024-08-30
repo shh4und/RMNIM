@@ -44,57 +44,34 @@ class Graph:
     def get_26_neighborhood(self, voxel):
         # returns a list of all possible neighbors of voxel
         z, y, x = voxel
-        z0, y0, x0 = self.root
-        if z == z0 and y == y0 and x == x0:
-            print("essa eh a raiz")
-            return [
+        return [
             (z + 1, y, x),
             (z - 1, y, x),
+            (z, y + 1, x),
             (z, y - 1, x),
             (z, y, x + 1),
             (z, y, x - 1),
+            (z + 1, y + 1, x),
             (z + 1, y - 1, x),
+            (z - 1, y + 1, x),
             (z - 1, y - 1, x),
             (z + 1, y, x + 1),
             (z + 1, y, x - 1),
             (z - 1, y, x + 1),
             (z - 1, y, x - 1),
+            (z, y + 1, x + 1),
+            (z, y + 1, x - 1),
             (z, y - 1, x + 1),
             (z, y - 1, x - 1),
+            (z + 1, y + 1, x + 1),
+            (z + 1, y + 1, x - 1),
             (z + 1, y - 1, x + 1),
             (z + 1, y - 1, x - 1),
+            (z - 1, y + 1, x + 1),
+            (z - 1, y + 1, x - 1),
             (z - 1, y - 1, x + 1),
             (z - 1, y - 1, x - 1),
         ]
-        else:
-            return [
-                (z + 1, y, x),
-                (z - 1, y, x),
-                (z, y + 1, x),
-                (z, y - 1, x),
-                (z, y, x + 1),
-                (z, y, x - 1),
-                (z + 1, y + 1, x),
-                (z + 1, y - 1, x),
-                (z - 1, y + 1, x),
-                (z - 1, y - 1, x),
-                (z + 1, y, x + 1),
-                (z + 1, y, x - 1),
-                (z - 1, y, x + 1),
-                (z - 1, y, x - 1),
-                (z, y + 1, x + 1),
-                (z, y + 1, x - 1),
-                (z, y - 1, x + 1),
-                (z, y - 1, x - 1),
-                (z + 1, y + 1, x + 1),
-                (z + 1, y + 1, x - 1),
-                (z + 1, y - 1, x + 1),
-                (z + 1, y - 1, x - 1),
-                (z - 1, y + 1, x + 1),
-                (z - 1, y + 1, x - 1),
-                (z - 1, y - 1, x + 1),
-                (z - 1, y - 1, x - 1),
-            ]
 
     def set_root(self, root_voxel):
         self.root = root_voxel
