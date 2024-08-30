@@ -79,19 +79,3 @@ def mean_threshold(images: np.ndarray, factor:int = 1) -> int:
         int: returns a ceiled value of the mean
     """
     return np.ceil((images.sum() / images.size) * factor)
-
-
-## For testing
-
-# def thinned(images, iter=1):
-#     return np.array([img_as_ubyte(thin(img, iter)) for img in images])
-
-# # Exemplo de uso com paralelização para a função otsu_binary
-# def otsu_binary_parallel(images, num_threads=4):
-#     with ThreadPoolExecutor(max_workers=num_threads) as executor:
-#         return np.array(list(executor.map(otsu_binary, images)))
-
-# # Exemplo de uso com paralelização para a função simple_binary
-# def simple_binary_parallel(images, n, num_threads=4):
-#     with ThreadPoolExecutor(max_workers=num_threads) as executor:
-#         return np.array(list(executor.map(lambda img: simple_binary([img], n)[0], images)))
