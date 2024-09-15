@@ -28,7 +28,6 @@ binary2 = simple_binary(seg1, threshold2)
 
 eroded3 = ndimage.binary_erosion(binary2)
 
-
 skel_op3 = img_as_ubyte(skeletonize(eroded3))
 # ### For visualization purposes only
 
@@ -46,4 +45,4 @@ print(f"OP_1 GOLD STANDARD ROOT: {g_root}\nTEST ROOT: {root}")
 
 mst = graph.apply_dfs_and_label_nodes()
 
-graph.save_to_swc(mst, "./Test/OP_1.swc", 1.2)
+graph.save_to_swc(mst, "./Test/OP_1GB.swc", 2.0)

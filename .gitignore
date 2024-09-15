@@ -1,7 +1,15 @@
 ip/__pycache__
+*/__pycache__
+
 .ipynb_checkpoints
+*/.ipynb_checkpoints
 *.pdf
+
 /Test/*
 !/Test/*.swc
+/Test/*[A-Za-z].swc
+
 *.ipynb
 .vscode
+/acc/*
+/prewitt_eroded3d

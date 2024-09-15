@@ -3,80 +3,75 @@ import numpy as np
 from ip.swc import *
 from typing import Tuple, Optional, List
 
+
 class Graph:
     def __init__(self, image: np.ndarray):
         self.graph = nx.Graph()
         self.image = image
         self.shape = image.shape
-        self.root: Tuple[int, int, int] = (0, 0, 0)
+        self.root: Tuple[float, float, float] = (0, 0, 0)
 
-    def add_edge_with_weight(self, voxel1: Tuple[int, int, int], voxel2: Tuple[int, int, int]):
+    def add_edge_with_weight(
+        self, voxel1: Tuple[float, float, float], voxel2: Tuple[float, float, float]
+    ):
         if not self.graph.has_edge(voxel1, voxel2):
             weight = self.euclidean_distance(voxel1, voxel2)
             self.graph.add_edge(voxel1, voxel2, weight=weight)
 
-    def euclidean_distance(self, point1: Tuple[int, int, int], point2: Tuple[int, int, int]) -> float:
+    def average(self, parent, child):
+        x0, y0, z0 = parent
+        x, y, z = child
+
+        return ((x0 + x) / 2, (y0 + y) / 2, (z0 + z) / 2)
+
+    def euclidean_distance(
+        self, point1: Tuple[float, float, float], point2: Tuple[float, float, float]
+    ) -> float:
         z1, y1, x1 = point1
         z2, y2, x2 = point2
-        squared_diff_xy = (x2 - x1) ** 2 + (y2 - y1) ** 2
+        squared_diff_xy = (x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2
         distance_xy = np.sqrt(squared_diff_xy)
         return distance_xy
 
     def create_graph(self) -> None:
-        y = self.root[1]
-        self.image[:, y+1:, :] = 0
+
         non_zero_voxels = np.nonzero(self.image)  # Get indices of all non-zero voxels
         for z, y, x in zip(*non_zero_voxels):
             voxel = (z, y, x)
+
             for neighbor in self.get_26_neighborhood(voxel):
-                nz, ny, nx = neighbor
-                # Check if the voxel at the new coordinates is foreground
-                if (
-                    0 <= nz < self.shape[0]
-                    and 0 <= ny < self.shape[1]
-                    and 0 <= nx < self.shape[2]
-                    and self.image[nz, ny, nx] != 0
-                ):
-                    self.add_edge_with_weight(voxel, neighbor)
-        
+
+                self.add_edge_with_weight(voxel, neighbor)
+
         print(">> Graph created")
 
-    def get_26_neighborhood(self, voxel: Tuple[int, int, int]) -> List[Tuple[int, int, int]]:
-        # returns a list of all possible neighbors of voxel
-        z, y, x = voxel
-        return [
-            (z + 1, y, x),
-            (z - 1, y, x),
-            (z, y + 1, x),
-            (z, y - 1, x),
-            (z, y, x + 1),
-            (z, y, x - 1),
-            (z + 1, y + 1, x),
-            (z + 1, y - 1, x),
-            (z - 1, y + 1, x),
-            (z - 1, y - 1, x),
-            (z + 1, y, x + 1),
-            (z + 1, y, x - 1),
-            (z - 1, y, x + 1),
-            (z - 1, y, x - 1),
-            (z, y + 1, x + 1),
-            (z, y + 1, x - 1),
-            (z, y - 1, x + 1),
-            (z, y - 1, x - 1),
-            (z + 1, y + 1, x + 1),
-            (z + 1, y + 1, x - 1),
-            (z + 1, y - 1, x + 1),
-            (z + 1, y - 1, x - 1),
-            (z - 1, y + 1, x + 1),
-            (z - 1, y + 1, x - 1),
-            (z - 1, y - 1, x + 1),
-            (z - 1, y - 1, x - 1),
-        ]
+    def get_26_neighborhood(
+        self, voxel: Tuple[float, float, float]
+    ) -> List[Tuple[int, int, int]]:
+        z, y, x = map(int, voxel)
+        neighbors = []
 
-    def set_root(self, root_voxel: Tuple[int, int, int]) -> None:
+        for dz in [-1, 0, 1]:
+            for dy in [-1, 0, 1]:
+                for dx in [-1, 0, 1]:
+                    if dz == 0 and dy == 0 and dx == 0:
+                        continue
+                    nz, ny, nx = z + dz, y + dy, x + dx
+
+                    if (
+                        0 <= nz < self.shape[0]
+                        and 0 <= ny < self.shape[1]
+                        and 0 <= nx < self.shape[2]
+                        and self.image[nz, ny, nx] != 0
+                    ):
+                        neighbors.append((nz, ny, nx))
+
+        return neighbors
+
+    def set_root(self, root_voxel: Tuple[float, float, float]) -> None:
         self.root = root_voxel
 
-    def get_root(self) -> Tuple[int, int, int]:
+    def get_root(self) -> Tuple[float, float, float]:
         return self.root
 
     def get_mst(self) -> nx.Graph:
@@ -86,7 +81,7 @@ class Graph:
         return mst
 
     def apply_dfs_and_label_nodes(self) -> nx.Graph:
-        # apply the dfs for labeling the nodes over the mst generated 
+        # apply the dfs for labeling the nodes over the mst generated
         mst = self.get_mst()
         visited = set()  # Keep track of visited nodes
         stack = [(self.root, -1)]  # Initialize stack with root and parent_id -1
@@ -101,11 +96,14 @@ class Graph:
                     node_id += 1
                 mst.nodes[voxel]["parent"] = parent_id
                 # Add children to stack
-                stack.extend((neighbor, mst.nodes[voxel]["id"]) for neighbor in mst.neighbors(voxel))
+                stack.extend(
+                    (neighbor, mst.nodes[voxel]["id"])
+                    for neighbor in mst.neighbors(voxel)
+                )
 
         print(">> Depth-First search and labeling complete")
         return mst
-    
+
     def save_to_swc(self, mst: nx.Graph, filename: str, width: float = 1.0) -> bool:
         swc = SWCFile(filename)
         mst_nodes_data = mst.nodes(data=True)

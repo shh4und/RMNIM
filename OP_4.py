@@ -3,7 +3,6 @@ from ip.enhancement import *
 from ip.binary import *
 from ip.graph_nx import *
 from ip.swc import *
-from ip.split import *
 from skimage.util import img_as_ubyte
 from skimage.morphology import skeletonize
 from scipy import ndimage
@@ -32,4 +31,4 @@ g_root = (128.2,504.37,0.3)
 print(f"OP_1 GOLD STANDARD ROOT: {g_root}\nTEST ROOT: {root}")
 
 mst = graph.apply_dfs_and_label_nodes()
-graph.save_to_swc(mst,"./Test/OP_4.swc",1.2)
+graph.save_to_swc(mst,"./Test/OP_4MA.swc",1.2)

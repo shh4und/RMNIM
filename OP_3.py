@@ -7,7 +7,6 @@ from skimage.util import img_as_ubyte
 from skimage.morphology import skeletonize
 from scipy import ndimage
 
-
 # Read Data
 
 folder_path = "./OlfactoryProjectionFibers/ImageStacks/OP_3"
@@ -17,13 +16,6 @@ images = load_tif_stack(folder_path)
 ##Code Process and Execution
 
 bilateral = bilateral_blur(images, 11, 75, 50)
-
-# threshold1 = mean_threshold(bilateral,5)
-# binary1 = simple_binary(bilateral, threshold1)
-# seg1 = segment(bilateral, binary1)
-# binary2 = simple_binary(seg1, threshold1)
-# skel = img_as_ubyte(skeletonize(binary2))
-
 
 binary3 = simple_binary(bilateral, mean_threshold(bilateral,7))
 seg1 = segment(bilateral, binary3)
@@ -41,7 +33,6 @@ skel2 = img_as_ubyte(skeletonize(eroded))
 # cv2_imshow([blended(eroded)])
 cv2_imshow(blended(skel2))
 
-
 ##Graph generation
 
 graph = Graph(skel2)
@@ -52,4 +43,4 @@ g_root = (93.742,179,38)
 print(f"OP_3 GOLD STANDARD ROOT: {g_root}\nTEST ROOT: {root}")
 
 mst = graph.apply_dfs_and_label_nodes()
-graph.save_to_swc(mst,"./Test/OP_3exp.swc")
+graph.save_to_swc(mst,"./Test/OP_3GB.swc")
