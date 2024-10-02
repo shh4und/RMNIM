@@ -59,3 +59,24 @@ def create_spherical_strel(size: int) -> np.ndarray:
                     strel[x, y, z] = 1
 
     return strel
+
+def remove_zero_slices(image :np.ndarray) -> np.ndarray:
+    
+    """Function to remove zero value slices from the image stack
+    
+    Args:
+        image (np.ndarray): given 3D stack image
+
+    Returns:
+        np.ndarray: returns a 3D stack image with only non-zero slices
+    """
+    
+    # Supondo que sua imagem seja um array chamado 'image'
+    non_zero_slices = np.sum(image, axis=(1, 2)) != 0
+    # invert boolean array to select only non-zero slices
+    keep_slices = ~non_zero_slices
+
+    # use np.delete to keep non-zero slices
+    result = np.delete(image, np.where(keep_slices), axis=0)
+    
+    return result
