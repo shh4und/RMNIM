@@ -18,30 +18,45 @@ class Graph:
             weight = self.euclidean_distance(voxel1, voxel2)
             self.graph.add_edge(voxel1, voxel2, weight=weight)
 
-    def average(self, parent, child):
-        x0, y0, z0 = parent
-        x, y, z = child
+    def simple_moving_average(self, arr, window_size):
+        # Separa os arrays individuais das triplas
+        if len(arr) >= window_size:
+            z, y, x = zip(*arr)
 
-        return ((x0 + x) / 2, (y0 + y) / 2, (z0 + z) / 2)
+            # Calcula a média móvel simples para cada array
+            z_sma = np.convolve(z, np.ones(window_size) / window_size, mode="valid")
+            y_sma = np.convolve(y, np.ones(window_size) / window_size, mode="valid")
+            x_sma = np.convolve(x, np.ones(window_size) / window_size, mode="valid")
+
+            return arr + list(zip(z_sma, y_sma, x_sma))
+
+        return arr
 
     def euclidean_distance(
         self, point1: Tuple[float, float, float], point2: Tuple[float, float, float]
     ) -> float:
         z1, y1, x1 = point1
         z2, y2, x2 = point2
-        squared_diff_xy = (x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2
+        squared_diff_xy = (x2 - x1) ** 2 + (y2 - y1) ** 2  # + (z2 - z1) ** 2
         distance_xy = np.sqrt(squared_diff_xy)
         return distance_xy
 
-    def create_graph(self) -> None:
+    def create_graph(
+        self, moving_avg: bool = False, window_moving_avg_sz: int = 2
+    ) -> None:
 
         non_zero_voxels = np.nonzero(self.image)  # Get indices of all non-zero voxels
         for z, y, x in zip(*non_zero_voxels):
             voxel = (z, y, x)
+            neighborhood = self.get_26_neighborhood(voxel)
 
-            for neighbor in self.get_26_neighborhood(voxel):
-
-                self.add_edge_with_weight(voxel, neighbor)
+            if moving_avg:
+                mov_avg = self.simple_moving_average(neighborhood, window_moving_avg_sz)
+                for neighbor in mov_avg:
+                    self.add_edge_with_weight(voxel, neighbor)
+            else:
+                for neighbor in neighborhood:
+                    self.add_edge_with_weight(voxel, neighbor)
 
         print(">> Graph created")
 
