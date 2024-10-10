@@ -31,7 +31,7 @@ skel2 = img_as_ubyte(skeletonize(eroded))
 #single_download(blend, "./Test/Images/OP_3_skel.png")
 
 # cv2_imshow([blended(eroded)])
-cv2_imshow(blended(skel2))
+#cv2_imshow(blended(skel2))
 
 ##Graph generation
 
