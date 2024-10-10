@@ -37,7 +37,7 @@ class Graph:
     ) -> float:
         z1, y1, x1 = point1
         z2, y2, x2 = point2
-        squared_diff_xy = (x2 - x1) ** 2 + (y2 - y1) ** 2  # + (z2 - z1) ** 2
+        squared_diff_xy = (x2 - x1) ** 2 + (y2 - y1) ** 2  + (z2 - z1) ** 2
         distance_xy = np.sqrt(squared_diff_xy)
         return distance_xy
 
