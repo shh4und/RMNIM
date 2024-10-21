@@ -26,18 +26,64 @@ def load_tif_stack(folder:str) -> np.ndarray:
             print(f"File {filename} does not exist.")
     return np.stack(images, axis=0)
 
-def cv2_imshow(imgs):
+def simple_imshow(imgs):
     if len(np.array(imgs).shape) < 3:
         stack3d = np.array([imgs])
     else:
         stack3d = imgs
-    x = 1
+    x = 0
     for img in stack3d:
         cv2.imshow(f"img 0{x}", img)
         x+=1
     cv2.waitKey(0)
     cv2.destroyAllWindows()
     return True
+
+def slide_imshow(image_stack, multiple_windows=False):
+    index = 0
+    num_images = len(image_stack)
+
+    if not multiple_windows:
+        while True:
+            curr_window_name = f"image[{index}] | press X to quit"
+
+            cv2.imshow(curr_window_name, image_stack[index])
+            key = cv2.waitKey(0)
+
+            if key == ord('x'):  # Press 'x' to quit
+                break
+            elif key == ord('e'):  # Press 'n' for next image
+                cv2.destroyWindow(curr_window_name)
+                index = (index + 1) % num_images
+            elif key == ord('q'):  # Press 'p' for previous image
+                cv2.destroyWindow(curr_window_name)
+                index = (index - 1) % num_images
+    else:
+        while True:
+            prev_index = (index - 1) % num_images
+            next_index = (index + 1) % num_images
+            
+            prev_window_name = f"image[{prev_index}] | press X to quit"
+            curr_window_name = f"image[{index}] | press X to quit"
+            next_window_name = f"image[{next_index}] | press X to quit"
+            cv2.imshow(prev_window_name, image_stack[prev_index])
+            cv2.imshow(curr_window_name, image_stack[index])
+            cv2.imshow(next_window_name, image_stack[next_index])
+            key = cv2.waitKey(0)
+
+            if key == ord('x'):  # Press 'x' to quit
+                break
+            elif key == ord('e'):  # Press 'n' for next image
+                cv2.destroyWindow(prev_window_name)
+                cv2.destroyWindow(curr_window_name)
+                cv2.destroyWindow(next_window_name)
+                index = (index + 1) % num_images
+            elif key == ord('q'):  # Press 'p' for previous image
+                cv2.destroyWindow(prev_window_name)
+                cv2.destroyWindow(curr_window_name)
+                cv2.destroyWindow(next_window_name)
+                index = (index - 1) % num_images
+    cv2.destroyAllWindows()
 
 def blended(imgs, proportion=False):
     if proportion:
