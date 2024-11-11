@@ -29,7 +29,7 @@ ou
 ```sh
 conda install -c conda-forge opencv scikit-image scipy numpy pandas jupyterlab
 ```
-
+## Execução
 ### Comandos do Makefile
 
 O `Makefile` contém alguns comandos úteis para executar e limpar o projeto:
@@ -48,7 +48,7 @@ make clean
 make runpy
 make all
 ```
-
+## Info
 ### Sobre o Package `ip`
 
 O package `ip` contém diversos módulos para processamento de imagens, incluindo:
@@ -89,7 +89,7 @@ or
 ```sh
 conda install -c conda-forge opencv scikit-image scipy numpy pandas jupyterlab
 ```
-
+## Running
 ### Makefile Commands
 
 The `Makefile` contains some useful commands to run and clean the project:
@@ -108,7 +108,7 @@ make clean
 make runpy
 make all
 ```
-
+## Info
 ### About the `ip` Package
 
 The `ip` package contains various modules for image processing, including:
