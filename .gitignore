@@ -9,7 +9,5 @@ ip/__pycache__
 !/Test/*.swc
 /Test/*[A-Za-z].swc
 
-*.ipynb
 .vscode
-/acc/*
-/prewitt_eroded3d
+
