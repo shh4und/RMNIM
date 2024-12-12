@@ -1,30 +1,44 @@
 import cv2
 import numpy as np
 import os
-import re
+from skimage.util import img_as_ubyte, img_as_float
 from ip.utils import *
 
 def load_tif_stack(folder:str) -> np.ndarray:
-    """Function to load and order the images by its filename from an image stack folder
-    (with .tif extension)
+    """Load a TIFF image stack as a 3D volume
 
     Args:
         folder (str): stack directory path name
 
     Returns:
-        np.ndarray: an ordered stack 
+        np.ndarray: 3D volume with shape (Z,Y,X)
     """
-    images = []
-    tiff_files = sorted([f for f in os.listdir(folder) if re.match(r".*\.tif$", f)], key=lambda x: int(re.findall(r"\d+", x)[0]))
-    for filename in tiff_files:
+        # Lista todos os arquivos .tif no diretório
+    tiff_files = [f for f in os.listdir(folder) if f.endswith('.tif')]
+    
+    # Ordena os arquivos numericamente
+    tiff_files.sort(key=lambda x: int(''.join(filter(str.isdigit, x))))
+    
+    # Carrega primeira imagem para obter dimensões
+    first_img = cv2.imread(os.path.join(folder, tiff_files[0]), cv2.IMREAD_GRAYSCALE)
+    if first_img is None:
+        raise ValueError(f"Não foi possível ler a imagem {tiff_files[0]}")
+    
+    # Inicializa array 3D
+    height, width = first_img.shape
+    depth = len(tiff_files)
+    stack = np.zeros((depth, height, width), dtype=np.uint8)
+    stack[0] = first_img
+    
+    # Carrega as demais imagens
+    for z, filename in enumerate(tiff_files[1:], 1):
         filepath = os.path.join(folder, filename)
-        if os.path.exists(filepath):
-            img = cv2.imread(filepath, cv2.IMREAD_GRAYSCALE)
-            if img is not None:
-                images.append(img)
-        else:
-            print(f"File {filename} does not exist.")
-    return np.stack(images, axis=0)
+        img = cv2.imread(filepath, cv2.IMREAD_GRAYSCALE)
+        if img is None:
+            raise ValueError(f"Não foi possível ler a imagem {filename}")
+        stack[z] = img
+        
+    return stack
 
 def simple_imshow(imgs):
     if len(np.array(imgs).shape) < 3:
@@ -85,49 +99,105 @@ def slide_imshow(image_stack, multiple_windows=False):
                 index = (index - 1) % num_images
     cv2.destroyAllWindows()
 
-def blended(imgs, proportion=False):
-    if proportion:
-        N = len(imgs)   
-        weight = 1.0 / N 
+def projection2d(imgs: np.ndarray, method: str = 'weighted', axis: int = 0) -> np.ndarray:
+    """Creates a 2D projection from a 3D image stack along specified axis.
 
-        blend_img = normalize_image_float(imgs[0]) * weight
+    Args:
+        imgs (np.ndarray): 3D image stack with shape (Z,Y,X)
+        method (str): Projection method - 'weighted', 'max', 'mean', or 'min'
+        axis (int): Axis along which to project (default 0 for Z-axis)
+
+    Returns:
+        np.ndarray: 2D projection image
+    """
+    if imgs.ndim != 3:
+        raise ValueError("Input must be 3D image stack")
+
+    if method == 'weighted':
+        N = len(imgs)
+        weight = 1.0 / N
+        
+        # Initialize with normalized first slice
+        projection = img_as_float(imgs[0]) * weight
+        
+        # Add weighted subsequent slices
         for img in imgs[1:]:
-            img = normalize_image_float(img)
-            blend_img = cv2.addWeighted(blend_img, 1.0, img, weight, 0)
-        blend_img = normalize_image_int(blend_img)
+            img_norm = img_as_float(img)
+            projection = cv2.addWeighted(projection, 1.0, img_norm, weight, 0)
+        
+        return img_as_ubyte(projection)
+    
+    elif method == 'max':
+        return np.max(imgs, axis=axis)
+    
+    elif method == 'mean':
+        return np.mean(imgs, axis=axis).astype(np.uint8)
+    
+    elif method == 'min':
+        return np.min(imgs, axis=axis)
+    
     else:
-        blend_img = imgs[0]
-        for img in imgs[1:]:
-            blend_img = cv2.addWeighted(blend_img, 1, img, 1, 0)
-    return blend_img
+        raise ValueError("Invalid method. Use 'weighted', 'max', 'mean', or 'min'")
 
-def single_download(image:np.ndarray, path:str) -> bool:
-    """Function to download a single image
+def single_download(image: np.ndarray, path: str) -> bool:
+    """Saves a single image to disk with error handling.
 
     Args:
-        image (np.ndarray): a given image
-        path (str): path where to downloaded the image
+        image (np.ndarray): Input image array
+        path (str): Full path including filename and extension
 
     Returns:
-        bool: confirms if succesfully downloaded
+        bool: True if successfully saved, False otherwise
     """
-    return cv2.imwrite(path, image)
-
-def download(images:np.ndarray, path:str) -> bool:
-    """Function to download a whole image stack
-    if it fails, it will show which index it fails at 
-    Args:
-        images (np.ndarray): a given image stack
-        path (str): path where to downloaded the stack
-
-    Returns:
-        bool: returns True if successfully downloaded
-    """
-    if not os.path.exists(path):
-        os.makedirs(path)
-        print("Path created.")
-    for idx, img in enumerate(images):
-        if not cv2.imwrite(os.path.join(path, f"{idx+1}.tif"), img):
-            print(f"Error at index: {idx}")
+    try:
+        # Validate input image
+        if image is None or image.size == 0:
+            print("Invalid image array")
             return False
-    return True
+            
+        # Validate and create directory if needed
+        directory = os.path.dirname(path)
+        if directory and not os.path.exists(directory):
+            os.makedirs(directory)
+            
+        # Validate file extension
+        if not path.lower().endswith(('.png', '.jpg', '.jpeg', '.tif', '.tiff')):
+            print("Invalid file extension")
+            return False
+            
+        return cv2.imwrite(path, image)
+        
+    except Exception as e:
+        print(f"Error saving image: {str(e)}")
+        return False
+
+def download(images: np.ndarray, path: str, prefix: str = "") -> bool:
+    """Downloads an image stack as individual TIFF files.
+    
+    Args:
+        images (np.ndarray): 3D image stack with shape (Z,Y,X)
+        path (str): Directory path for saving images
+        prefix (str, optional): Prefix for filenames. Defaults to ""
+    
+    Returns:
+        bool: True if successful, False if any error occurs
+    """
+    try:
+        os.makedirs(path, exist_ok=True)
+        
+        # Add zero padding to maintain correct order
+        n_digits = len(str(len(images)))
+        
+        for idx, img in enumerate(images):
+            filename = f"{prefix}{str(idx+1).zfill(n_digits)}.tif"
+            filepath = os.path.join(path, filename)
+            
+            if not cv2.imwrite(filepath, img):
+                print(f"Failed to save image at index {idx}")
+                return False
+                
+        return True
+        
+    except Exception as e:
+        print(f"Error saving stack: {str(e)}")
+        return False
