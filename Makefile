@@ -3,6 +3,7 @@ STACK=1
 DATASET=5
 TEST=$(STACK)
 GOLD=$(STACK)
+PY=python
 
 runmetric:
 	java -jar DiademMetric/DiademMetric.jar -G OlfactoryProjectionFibers/GoldStandardReconstructions/OP_$(GOLD).swc -T Test/OP_$(TEST).swc -D $(DATASET)
@@ -13,9 +14,12 @@ clean:
 runpypy:
 	pypy OP_$(STACK).py
 
+runpy:
+	python OP_$(STACK).py
+
 all: 
-	@/usr/bin/time -f "time cpu: %Us\ntime sys: %Ss" -o acc/OP_$(STACK)_acc.txt pypy OP_$(STACK).py
-	java -jar DiademMetric/DiademMetric.jar -G OlfactoryProjectionFibers/GoldStandardReconstructions/OP_$(GOLD).swc -T Test/OP_$(TEST).swc -D $(DATASET) >> acc/OP_$(STACK)_acc.txt
+	@/usr/bin/time -f "time cpu: %Us\ntime sys: %Ss" -o acc/OP_$(TEST)_acc.txt $(PY) OP_$(GOLD).py
+	java -jar DiademMetric/DiademMetric.jar -G OlfactoryProjectionFibers/GoldStandardReconstructions/OP_$(GOLD).swc -T Test/OP_$(TEST).swc -D $(DATASET) >> acc/OP_$(TEST)_acc.txt
 	@echo "Done!"
 
 #runcustom:
