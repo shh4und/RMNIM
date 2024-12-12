@@ -89,8 +89,12 @@ class Graph:
     def get_root(self) -> Tuple[float, float, float]:
         return self.root
 
-    def get_mst(self) -> nx.Graph:
-        mst = nx.minimum_spanning_tree(self.graph, weight="weight", algorithm="prim")
+    def get_mst(graph: nx.Graph = None) -> nx.Graph:
+        if graph==None:
+            mst = nx.minimum_spanning_tree(self.graph, weight="weight", algorithm="prim")
+        else:
+            mst = nx.minimum_spanning_tree(graph, weight="weight")
+
         print(">> Minimum Spanning Tree Generated")
         print(">> Minimum Spanning Tree length:", len(mst))
         return mst
