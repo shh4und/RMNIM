@@ -7,6 +7,20 @@ from skimage.util import img_as_ubyte, img_as_float
 from scipy.signal import convolve2d
 from scipy.spatial.distance import pdist, squareform
 from concurrent.futures import ProcessPoolExecutor
+import cv2 as cv
+
+def convolve3d(image3d: np.ndarray, kernel):
+    #check if the image is 3d
+    if image3d.ndim != 3:
+        print("The image needs to be 3D and (z,y,x) shape")
+        return
+    convolved_image =  np.zeros_like(image3d, image3d.dtype)
+    z, _, _ = image3d.shape
+    for zi in range(z):
+        convolved_image[zi] = convolve2d(image3d[zi], kernel, mode="same", boundary="symm")
+    
+    return convolved_image
+    
 
 def create_edge_map(image3d, mode="sobel"):
     edge_map = np.zeros_like(image3d)
@@ -22,10 +36,16 @@ def create_edge_map(image3d, mode="sobel"):
 
         # Normalizar para [0,1]
         edge_map = (edge_map - edge_map.min()) / (edge_map.max() - edge_map.min())
+    # elif mode == "canny":
+    #     for z in range(image3d.shape[0]):
+    #         edge_map[z] = feature.canny(
+    #             image3d[z], low_threshold=0.1, high_threshold=0.2
+    #         )
     elif mode == "canny":
+        image3d = img_as_ubyte(image3d)
         for z in range(image3d.shape[0]):
-            edge_map[z] = feature.canny(
-                image3d[z], sigma=1.0, low_threshold=0.1, high_threshold=0.3
+            edge_map[z] = cv.Canny(
+                image3d[z], int(255*0.1), int(255*0.3)
             )
     elif mode == "prewitt":
         prewitt_x = ndimage.prewitt(image3d, axis=1)
@@ -71,56 +91,6 @@ def create_vfc_kernel(size, sigma=3.0):
         ky = ky / max_mag
 
     return kx, ky
-
-
-# def apply_vfc_3d(image, kx, ky):
-#     # Assume image shape is (z,y,x)
-#     z, y, x = image.shape
-
-#     # Inicializar arrays de saída
-#     fx = np.zeros_like(image, dtype=float)
-#     fy = np.zeros_like(image, dtype=float)
-
-#     # Aplicar convolução para cada fatia z
-#     for z_slice in range(z):
-#         # Convolução com kernel x
-#         fx[z_slice] = convolve2d(image[z_slice], kx, mode="same", boundary="symm")
-
-#         # Convolução com kernel y
-#         fy[z_slice] = convolve2d(image[z_slice], ky, mode="same", boundary="symm")
-
-#     return fx, fy
-
-
-# def process_slice(args):
-#     z_slice, image_slice, kx, ky = args
-#     # Process single slice
-#     fx_slice = convolve2d(image_slice, kx, mode="same", boundary="wrap")
-#     fy_slice = convolve2d(image_slice, ky, mode="same", boundary="wrap")
-#     return z_slice, fx_slice, fy_slice
-
-
-# def apply_vfc_3d_parallel(image, kx, ky, num_processes=None):
-#     z, y, x = image.shape
-
-#     # Initialize output arrays
-#     fx = np.zeros_like(image, dtype=float)
-#     fy = np.zeros_like(image, dtype=float)
-
-#     # Prepare arguments for parallel processing
-#     args = [(i, image[i], kx, ky) for i in range(z)]
-
-#     # Process slices in parallel
-#     with Pool(processes=num_processes) as pool:
-#         results = pool.map(process_slice, args)
-
-#     # Reorganize results
-#     for z_slice, fx_slice, fy_slice in results:
-#         fx[z_slice] = fx_slice
-#         fy[z_slice] = fy_slice
-
-#     return fx, fy
-
 
 def process_chunk(chunk_data):
     chunk, kx, ky = chunk_data
@@ -170,7 +140,9 @@ def apply_vfc_3d_parallel_improved(image, kx, ky, num_processes=None, chunk_size
     return fx, fy
 
 
-def medialness(image3d, edge_map_mode, kernel_size=4, sigma=3.0, num_processes=None, chunk_size=4):
+def medialness(
+    image3d, edge_map_mode, kernel_size=4, sigma=3.0, num_processes=None, chunk_size=4
+):
     edge_map = create_edge_map(image3d, edge_map_mode)
     kx, ky = create_vfc_kernel(kernel_size, sigma)
     fx, fy = apply_vfc_3d_parallel_improved(edge_map, kx, ky, num_processes, chunk_size)
@@ -187,10 +159,14 @@ def medialness(image3d, edge_map_mode, kernel_size=4, sigma=3.0, num_processes=N
     return img_as_float(medial_axis)
 
 
-def scale_space_medialness(image, edge_map_mode, kernel_size, scale_space, num_processes, chunk_size):
+def scale_space_medialness(
+    image, edge_map_mode, kernel_size, scale_space, num_processes, chunk_size
+):
     medialness_result = np.zeros_like(image, dtype=float)
     for sigma in scale_space:
-        current_medialness = medialness(image, edge_map_mode, kernel_size, sigma, num_processes, chunk_size)
+        current_medialness = medialness(
+            image, edge_map_mode, kernel_size, sigma, num_processes, chunk_size
+        )
         medialness_result = np.maximum(medialness_result, current_medialness)
 
     return img_as_float(medialness_result)
@@ -215,14 +191,18 @@ def local_maxima_3D(data, order=1):
     """
     size = 1 + 2 * order
     footprint = np.ones((size, size, size))
+    #footprint=ndimage.generate_binary_structure(size, 1)
     footprint[order, order, order] = 0
 
     filtered = ndimage.maximum_filter(data, footprint=footprint)
     mask_local_maxima = data > filtered
+
+
     coords = np.asarray(np.where(mask_local_maxima)).T
     values = data[mask_local_maxima]
 
     return coords, values
+
 
 
 def connect_medial_points(coords, values, max_distance=10, angle_threshold=90):

@@ -1,9 +1,7 @@
-ip/__pycache__
-*/__pycache__
+*/__pycache__/*
 
-.ipynb_checkpoints
-*/.ipynb_checkpoints
-*.pdf
+*/.ipynb_checkpoints/*
+*/*.pdf
 
 /Test/*
 !/Test/*.swc

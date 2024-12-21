@@ -33,6 +33,7 @@ __all__ = [
     "medialness",
     "scale_space_medialness",
     "local_maxima_3D",
+    "convolve3d",
     "create_maxima_image",
     "connect_medial_points",
     "visualize_medial_graph",
