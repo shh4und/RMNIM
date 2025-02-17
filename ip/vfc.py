@@ -1,26 +1,25 @@
 import numpy as np
-import networkx as nx
-import matplotlib.pyplot as plt
-from skimage import feature
 from scipy import ndimage
 from skimage.util import img_as_ubyte, img_as_float
 from scipy.signal import convolve2d
-from scipy.spatial.distance import pdist, squareform
 from concurrent.futures import ProcessPoolExecutor
 import cv2 as cv
 
+
 def convolve3d(image3d: np.ndarray, kernel):
-    #check if the image is 3d
+    # check if the image is 3d
     if image3d.ndim != 3:
         print("The image needs to be 3D and (z,y,x) shape")
         return
-    convolved_image =  np.zeros_like(image3d, image3d.dtype)
+    convolved_image = np.zeros_like(image3d, image3d.dtype)
     z, _, _ = image3d.shape
     for zi in range(z):
-        convolved_image[zi] = convolve2d(image3d[zi], kernel, mode="same", boundary="symm")
-    
+        convolved_image[zi] = convolve2d(
+            image3d[zi], kernel, mode="same", boundary="symm"
+        )
+
     return convolved_image
-    
+
 
 def create_edge_map(image3d, mode="sobel"):
     edge_map = np.zeros_like(image3d)
@@ -45,7 +44,7 @@ def create_edge_map(image3d, mode="sobel"):
         image3d = img_as_ubyte(image3d)
         for z in range(image3d.shape[0]):
             edge_map[z] = cv.Canny(
-                image3d[z], int(255*0.1), int(255*0.3)
+                image3d[z], int(255 * 0.1), int(255 * 0.3), L2gradient=True
             )
     elif mode == "prewitt":
         prewitt_x = ndimage.prewitt(image3d, axis=1)
@@ -91,6 +90,7 @@ def create_vfc_kernel(size, sigma=3.0):
         ky = ky / max_mag
 
     return kx, ky
+
 
 def process_chunk(chunk_data):
     chunk, kx, ky = chunk_data
@@ -191,99 +191,16 @@ def local_maxima_3D(data, order=1):
     """
     size = 1 + 2 * order
     footprint = np.ones((size, size, size))
-    #footprint=ndimage.generate_binary_structure(size, 1)
+    # footprint=ndimage.generate_binary_structure(size, 1)
     footprint[order, order, order] = 0
 
     filtered = ndimage.maximum_filter(data, footprint=footprint)
     mask_local_maxima = data > filtered
 
-
     coords = np.asarray(np.where(mask_local_maxima)).T
     values = data[mask_local_maxima]
 
     return coords, values
-
-
-
-def connect_medial_points(coords, values, max_distance=10, angle_threshold=90):
-    """
-    Connect medial points into a graph based on distance and orientation.
-
-    Parameters
-    ----------
-    coords : ndarray
-        Coordinates of medial points (N x 3)
-    values : ndarray
-        Medialness values at those coordinates
-    max_distance : float
-        Maximum distance to connect points
-    angle_threshold : float
-        Maximum angle difference in degrees to connect points
-
-    Returns
-    -------
-    nx.Graph
-        Graph representing connected medial points
-    """
-    # Create graph
-    G = nx.Graph()
-
-    # Add nodes with their properties
-    for i, (coord, val) in enumerate(zip(coords, values)):
-        G.add_node(i, pos=coord, value=val)
-
-    # Calculate pairwise distances
-    distances = pdist(coords)
-    dist_matrix = squareform(distances)
-
-    # Connect points based on distance and orientation
-    for i in range(len(coords)):
-        for j in range(i + 1, len(coords)):
-            dist = dist_matrix[i, j]
-            v1 = coords[i]
-            v2 = coords[j]
-            if dist <= max_distance:
-                # Calculate orientation vector between points
-                dot_product = np.dot(v1, v2)
-                magnitude_v1 = np.linalg.norm(v1)
-                magnitude_v2 = np.linalg.norm(v2)
-                # vec = coords[j] - coords[i]
-                # Cálculo do cosseno do ângulo
-                cos_theta = dot_product / (magnitude_v1 * magnitude_v2)
-                # Cálculo do ângulo em radianos
-                theta_rad = np.arccos(cos_theta) * 180 / np.pi
-
-                # Converter para graus
-                theta_deg = np.degrees(theta_rad)
-                # angle = np.arctan2(vec[1], vec[2]) * 180 / np.pi
-
-                # Add edge if angle difference is within threshold
-                if abs(theta_deg) <= angle_threshold:
-                    G.add_edge(i, j, weight=dist)
-
-    return G
-
-
-def visualize_medial_graph(image3d, graph):
-    """
-    Visualize the medial graph overlaid on the original image.
-    Projects 3D coordinates to 2D for visualization.
-    """
-    plt.figure(figsize=(10, 10))
-
-    # Show max projection of image
-    proj = np.max(image3d, axis=0)
-    plt.imshow(proj, cmap="gray")
-
-    # Get 3D positions and convert to 2D by dropping z-coordinate
-    pos_3d = nx.get_node_attributes(graph, "pos")
-    pos_2d = {node: (pos[2], pos[1]) for node, pos in pos_3d.items()}  # Use y,x coords
-
-    # Draw graph edges with 2D positions
-    nx.draw_networkx_edges(graph, pos=pos_2d, edge_color="r", width=0.5)
-
-    plt.axis("off")
-    plt.show()
 
 
 # More efficient way
