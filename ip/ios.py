@@ -195,7 +195,7 @@ def download(images: np.ndarray, path: str, prefix: str = "") -> bool:
             if not cv2.imwrite(filepath, img):
                 print(f"Failed to save image at index {idx}")
                 return False
-                
+        print(f"Downloaded {len(images)} items at {path}")
         return True
         
     except Exception as e:
