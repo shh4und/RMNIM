@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.spatial import cKDTree
 
 def normalize_image_int(image: np.ndarray) -> np.ndarray:
     """Function to normalize a given image from float type range (0,1) to uint type range (0,255)
@@ -80,3 +81,36 @@ def remove_zero_slices(image :np.ndarray) -> np.ndarray:
     result = np.delete(image, np.where(keep_slices), axis=0)
     
     return result
+
+def mean_euclidean_distance(binary_img):
+    """
+    Calculate mean Euclidean distance between neighboring white pixels in 2D or 3D binary image.
+    
+    Parameters:
+        binary_img (np.ndarray): Binary image (2D or 3D array with 0s and 1s/255s)
+        
+    Returns:
+        float: Mean Euclidean distance between neighboring white pixels
+    """
+    
+    # Input validation
+    if not (binary_img.ndim in [2, 3]):
+        raise ValueError("Image must be 2D or 3D array")
+    
+    # Get coordinates of white pixels
+    white_pixels = np.where(binary_img > 0)
+    
+    # Create list of coordinates (handles both 2D and 3D)
+    coordinates = np.array(list(zip(*white_pixels)))
+    
+    if len(coordinates) < 2:
+        return 0
+    
+    # Use KDTree to find nearest neighbors
+    tree = cKDTree(coordinates)
+    distances, _ = tree.query(coordinates, k=2)
+    
+    # distances[:, 1] contains the distances to the nearest neighbor
+    mean_distance = np.mean(distances[:, 1])
+    
+    return mean_distance
