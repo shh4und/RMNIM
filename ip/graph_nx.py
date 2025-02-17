@@ -48,6 +48,7 @@ class Graph:
         non_zero_voxels = np.nonzero(self.image)  # Get indices of all non-zero voxels
         for z, y, x in zip(*non_zero_voxels):
             voxel = (z, y, x)
+            self.graph.add_node(voxel, pos=voxel)
             neighborhood = self.get_26_neighborhood(voxel)
 
             if moving_avg:
@@ -89,11 +90,12 @@ class Graph:
     def get_root(self) -> Tuple[float, float, float]:
         return self.root
 
-    def get_mst(graph: nx.Graph = None) -> nx.Graph:
-        if graph==None:
-            mst = nx.minimum_spanning_tree(self.graph, weight="weight", algorithm="prim")
-        else:
-            mst = nx.minimum_spanning_tree(graph, weight="weight")
+    def get_graph(self) -> nx.Graph:
+        return self.graph
+
+    def get_mst(self) -> nx.Graph:
+        mst = nx.minimum_spanning_tree(self.graph, weight="weight", algorithm="prim")
+        
 
         print(">> Minimum Spanning Tree Generated")
         print(">> Minimum Spanning Tree length:", len(mst))
